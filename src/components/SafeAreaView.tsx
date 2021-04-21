@@ -1,0 +1,26 @@
+import React, { ReactNode } from 'react'
+import {
+  Platform,
+  SafeAreaView as NativeSafeAreaView,
+  StatusBar,
+  StyleSheet
+} from 'react-native'
+
+interface SafeAreaViewProps {
+  children: ReactNode
+}
+
+export function SafeAreaView({ children, ...rest }: SafeAreaViewProps) {
+  return (
+    <NativeSafeAreaView style={styles.container} {...rest}>
+      {children}
+    </NativeSafeAreaView>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+  }
+})
