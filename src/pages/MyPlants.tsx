@@ -1,23 +1,44 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, View, Text, Image, FlatList } from 'react-native'
+import { StyleSheet, View, Text, Image, FlatList, Alert } from 'react-native'
 import { formatDistance } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-import { Header } from '../components/Header'
-import { SafeAreaView } from '../components/SafeAreaView'
+import { PlantProps, loadPlants, removePlant } from '../libs/storage'
 
-import { PlantProps, loadPlants } from '../libs/storage'
+import { Header } from '../components/Header'
+import { PlantCardSecondary } from '../components/PlantCardSecondary'
+import { Load } from '../components/Load'
 
 import waterdrop from '../assets/waterdrop.png'
 
 import colors from '../styles/colors'
 import fonts from '../styles/fonts'
-import { PlantCardSecondary } from '../components/PlantCardSecondary'
 
 export function MyPlants() {
   const [myPlants, setMyPlants] = useState<PlantProps[]>([])
   const [loading, setLoading] = useState(true)
   const [nextWatered, setNextWatered] = useState<string>()
+
+  function handleRemove(plant: PlantProps) {
+    Alert.alert('Remover', `Deseja remover a ${plant.name}?`, [
+      {
+        text: 'Não  🙏',
+        style: 'cancel'
+      },
+      {
+        text: 'Sim 😢',
+        onPress: async () => {
+          try {
+            await removePlant(String(plant.id))
+
+            setMyPlants(oldData => oldData.filter(item => item.id !== plant.id))
+          } catch {
+            Alert.alert('Não foi possível remover a planta! 😢')
+          }
+        }
+      }
+    ])
+  }
 
   useEffect(() => {
     async function loadStoragedData() {
@@ -40,33 +61,36 @@ export function MyPlants() {
     loadStoragedData()
   }, [])
 
+  if (loading) {
+    return <Load />
+  }
+
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        <Header />
+    <View style={styles.container}>
+      <Header />
 
-        <View style={styles.spotlight}>
-          <Image source={waterdrop} style={styles.spotlightImage} />
-          <Text style={styles.spotlightText}>{nextWatered}</Text>
-        </View>
-
-        <View style={styles.plants}>
-          <Text style={styles.plantsTitle}>Próximas regadas</Text>
-
-          <FlatList
-            data={myPlants}
-            keyExtractor={item => String(item.id)}
-            renderItem={({ item }) => (
-              <PlantCardSecondary
-                data={{ name: item.name, photo: item.photo, hour: item.hour }}
-              />
-            )}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flex: 1 }}
-          />
-        </View>
+      <View style={styles.spotlight}>
+        <Image source={waterdrop} style={styles.spotlightImage} />
+        <Text style={styles.spotlightText}>{nextWatered}</Text>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.plants}>
+        <Text style={styles.plantsTitle}>Próximas regadas</Text>
+
+        <FlatList
+          data={myPlants}
+          keyExtractor={item => String(item.id)}
+          renderItem={({ item }) => (
+            <PlantCardSecondary
+              handleRemove={() => handleRemove(item)}
+              data={item}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flex: 1 }}
+        />
+      </View>
+    </View>
   )
 }
 
@@ -77,7 +101,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 32,
-    paddingTop: 50,
     backgroundColor: colors.background
   },
 

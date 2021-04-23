@@ -22,8 +22,6 @@ export function SafeAreaView({ children, ...rest }: SafeAreaViewProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-around',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   }
 })
