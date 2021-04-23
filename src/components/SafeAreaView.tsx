@@ -5,6 +5,7 @@ import {
   StatusBar,
   StyleSheet
 } from 'react-native'
+import { getBottomSpace } from 'react-native-iphone-x-helper'
 
 interface SafeAreaViewProps {
   children: ReactNode
